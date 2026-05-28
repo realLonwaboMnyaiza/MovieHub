@@ -1,6 +1,6 @@
-# Movie Shack
+# Movie Hub NodeJs API
 
-Backend API application used for viewing all the movies we have to offer.
+Backend NodeJs API application used for viewing all the movies we have to offer.
 
 ## Tech Stack
 
