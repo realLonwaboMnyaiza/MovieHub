@@ -35,3 +35,4 @@ Backend NodeJs API application used for viewing all the movies we have to offer.
 3. NginX (reverse proxy & load balancing).
 4. Redis as caching layer.
 5. Containerize Application via Docker.
+6. API documentation. (Swagger)
