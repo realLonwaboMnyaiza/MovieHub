@@ -3,6 +3,7 @@ import { Movie, validate } from '../models/movie.model';
 import { Genre } from '../models/genre.model';
 import authenticate from '../middleware/authentication.middleware';
 import authorize from '../middleware/authorization.middleware';
+import validateGuid from '../middleware/guid-validation.middleware';
 
 const router = express.Router();
 
@@ -15,8 +16,8 @@ router.get(baseURL, async (req: Request, res: Response) => {
   res.status(200).send(movies);
 });
 
-router.get(`${baseURL}/:id`, async (req: Request, res: Response) => {
-  const movieId = req.params.id;
+router.get(`${baseURL}/:id`, [validateGuid], async (req: Request, res: Response) => {
+  const movieId = req.guid;
   const movie = await Movie.findById(movieId);
 
   if (!movie) res.status(404).send('Movie does not exist.');
@@ -31,12 +32,15 @@ router.post(baseURL, [authenticate, authorize], async (req: Request, res: Respon
   const dailyRentalRate = req.body.dailyRentalRate;
 
   const { error } = validate(req.body);
+  console.log('error: ', error);
   if (error) {
     res.status(400).send(error?.details[0]?.message);
   }
 
   if (!genreId) res.status(400).send('Genre id invalid');
   const genre = await Genre.findById(genreId);
+
+  console.log('genre: ', genre);
 
   const movie = await new Movie({
     title,

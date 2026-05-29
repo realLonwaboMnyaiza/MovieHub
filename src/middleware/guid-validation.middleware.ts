@@ -10,7 +10,7 @@ declare module "express-serve-static-core" {
 export default function validateGuid(req: Request, res: Response, next: NextFunction) {
   const resourceId = req.params.id as string;
   if (!mongoose.Types.ObjectId.isValid(resourceId))
-    return res.status(404).send('Invalid genres ID provided.');
+    return res.status(404).send('Invalid ID provided.');
 
   req.guid = resourceId;
   return next();

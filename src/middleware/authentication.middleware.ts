@@ -19,8 +19,9 @@ export default function authenticate(req: Request, res: Response, next: NextFunc
 
   try {
     // todo: refactor types... might use type narrowing...
-    const privateKey = process.env.KEY || '';
-    const decodedToken: JwtPayload | string = jwt.verify(token, privateKey);
+    const privateKey = process.env.KEY;
+    if (!privateKey) throw Error('Unable to retrieve token key.');
+    const decodedToken = jwt.verify(token, privateKey, { algorithms: ['HS256'] });
     req.token = decodedToken as JwtPayload;
     return next();
   } catch (error) {

@@ -24,12 +24,12 @@ router.get(
     const genreId = req.guid;
     const genre = await Genre.findById(genreId);
 
-    if (!genre) res.status(404).send('The genre id does not exist');
+    if (!genre) res.status(404).send('The genre does not exist');
     if (!validate(req.body)) {
       res
         .status(400)
         .send(
-          `Name property must be at least ${minGenresLength} characters long.`,
+          `Name property does not meet the minimum length requirements.`,
         );
     }
 
@@ -41,8 +41,8 @@ router.post(
   baseURL,
   [authenticate, authorize],
   errorWrapper(async (req: Request, res: Response) => {
+    const { error } = validate(req.body);
     const genreName = req.body.name;
-    const { error } = validate(genreName);
 
     if (error) {
       res.status(400).send(error?.details[0]?.message);
@@ -51,7 +51,7 @@ router.post(
     const genre = new Genre({ name: genreName });
     await genre.save();
 
-    res.status(201).send(`Genre created: ${genre.name}`);
+    res.status(201).send(`Created the following genre: ${genre.name}`);
   }),
 );
 
@@ -59,22 +59,20 @@ router.put(
   `${baseURL}/:id`,
   [authenticate, authorize, validateGuid],
   errorWrapper(async (req:Request, res:Response) => {
+    const { error } = validate(req.body);
+    if (error) {
+      res.status(400).send(error?.details[0]?.message);
+    }
+
     const genreId = req.guid;
     const genreName = req.body.name;
     let genre = await Genre.findById(genreId);
     if (!genre) res.status(404).send('The genre id does not exist');
 
-    const { error } = validate(genreName);
-    if (error) {
-      res
-        .status(400)
-        .send(
-          `Name does not meet the minimum character requirements.`,
-        );
+    if (genre) {
+      genre.name = genreName;
+      await genre.save();
     }
-
-    genre!.name = genreName;
-    await genre!.save();
 
     res.status(201).send(`Genre updated to: ${genreName}`);
   }),

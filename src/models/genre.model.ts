@@ -9,16 +9,17 @@ const modelName = 'Genre';
 const schema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
-    minLength: 5,
+    trim: true,
+    minLength: 3,
     maxLength: 50,
+    required: true,
   },
 });
 const Model = mongoose.model(modelName, schema);
 
-function validateUsingJoi(input: string) {
+function validateUsingJoi(input: GenrePayload) {
   const schema = Joi.object({
-    name: Joi.string().min(5).max(50).required(),
+    name: Joi.string().min(3).max(50).required(),
   });
 
   return schema.validate(input);

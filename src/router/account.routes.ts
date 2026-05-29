@@ -7,9 +7,9 @@ import authenticationValidation from '../models/auth.model';
 
 const router = express.Router();
 
-const baseURL = '/api';
-const baseUserURL = '/api/user/';
-router.get(`${baseURL}/app/`, (req: Request, res: Response) => {
+const baseAppURL = '/api';
+const baseUserURL = '/api/user';
+router.get(`${baseAppURL}/app/`, (req: Request, res: Response) => {
   res
     .status(200)
     .send('Welcome to MovieShack, we hope you enjoy our product offering.');
@@ -25,7 +25,7 @@ router.get(baseUserURL, authenticate, async (req: Request, res: Response) => {
   res.header('x-auth-token', token).status(200).send(user);
 });
 
-router.put(`${baseUserURL}/permissions`, async (req: Request, res: Response) => {
+router.put(`${baseUserURL}/permissions`, [authenticate], async (req: Request, res: Response) => {
   const email = req.body.email;
   const isAdmin = req.body.isAdmin;
 
@@ -33,12 +33,16 @@ router.put(`${baseUserURL}/permissions`, async (req: Request, res: Response) => 
   if (!user) return res.status(400).send('User does not exist.');
 
   user.isAdmin = isAdmin;
+  const token = user.generateAuthenticationToken();
   await user.save();
 
-  return res.status(201).send('User rights have been elavated to ADMIN.');
+  return res
+    .header('x-auth-token', token)
+    .status(201)
+    .send('User rights have been elavated to ADMIN.');
 });
 
-router.post(`${baseURL}/register`, async (req: Request, res: Response) => {
+router.post(`${baseUserURL}/register`, async (req: Request, res: Response) => {
   const { error } = validate(req.body);
   if (error) res.status(400).send(error?.details[0]?.message);
 
@@ -50,7 +54,7 @@ router.post(`${baseURL}/register`, async (req: Request, res: Response) => {
   const password = req.body.password;
 
   let user = await User.findOne({ email });
-  if (user) return res.status(400).send('This accound already exist.');
+  if (user) return res.status(400).send('User account already exist.');
 
   user = new User({
     username,
@@ -71,7 +75,7 @@ router.post(`${baseURL}/register`, async (req: Request, res: Response) => {
     .send('User has been registered.');
 });
 
-router.post(`${baseURL}/login`, async (req: Request, res: Response) => {
+router.post(`${baseUserURL}/login`, async (req: Request, res: Response) => {
   const { error } = authenticationValidation(req.body);
   if (error) return res.status(400).send(error?.details[0]?.message);
 
@@ -98,7 +102,7 @@ router.post(`${baseURL}/login`, async (req: Request, res: Response) => {
 });
 
 // todo: add logout test.
-router.post(`${baseURL}/logout`, async (req: Request, res: Response) => {
+router.post(`${baseUserURL}/logout`, async (req: Request, res: Response) => {
   res.setHeader('x-auth-token', '');
   return res.status(201).send('User has been logged out.');
 });

@@ -15,7 +15,7 @@ interface MoviePayload {
   dailyRentalRate: number;
 }
 
-const name = 'Movie';
+const modelName = 'Movie';
 const schema = new mongoose.Schema({
   title: {
     type: String,
@@ -55,7 +55,7 @@ const dto = new mongoose.Schema({
   },
 });
 
-const model = mongoose.model(name, schema);
+const model = mongoose.model(modelName, schema);
 
 const JoiObjectId: JoiWithObjectId = joiObjectId(Joi);
 
