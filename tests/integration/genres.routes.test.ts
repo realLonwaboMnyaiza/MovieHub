@@ -19,7 +19,6 @@ describe('/api/genres/', () => {
 
       // act.
       const res = await request(server).get('/api/genres/');
-      console.log('Response: ', res);
 
       // assert.
       expect(res.status).toBe(200);
