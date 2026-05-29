@@ -6,14 +6,16 @@ import authorize from '../middleware/authorization.middleware';
 
 const router = express.Router();
 
-router.get('/api/movies/', async (req: Request, res: Response) => {
+const baseURL = '/api/movies';
+
+router.get(baseURL, async (req: Request, res: Response) => {
   const movies = await Movie.find();
   if (!movies) res.status(404).send('No movies exist in the database.');
 
   res.status(200).send(movies);
 });
 
-router.get('/api/movies/:id', async (req: Request, res: Response) => {
+router.get(`${baseURL}/:id`, async (req: Request, res: Response) => {
   const movieId = req.params.id;
   const movie = await Movie.findById(movieId);
 
@@ -22,7 +24,7 @@ router.get('/api/movies/:id', async (req: Request, res: Response) => {
   res.status(200).send(movie);
 });
 
-router.post('/api/movies/', [authenticate, authorize], async (req: Request, res: Response) => {
+router.post(baseURL, [authenticate, authorize], async (req: Request, res: Response) => {
   const title = req.body.title;
   const genreId = req.body.genreId;
   const numberInStock = req.body.numberInStock;
@@ -47,7 +49,7 @@ router.post('/api/movies/', [authenticate, authorize], async (req: Request, res:
   res.status(201).send(`Movie has been saved. ${movie}`);
 });
 
-router.put('/api/movies/:id', [authenticate, authorize], async (req: Request, res: Response) => {
+router.put(`${baseURL}/:id`, [authenticate, authorize], async (req: Request, res: Response) => {
   const movieId = req.params.id;
   const movie = await Movie.findById(movieId);
 
@@ -76,7 +78,7 @@ router.put('/api/movies/:id', [authenticate, authorize], async (req: Request, re
 });
 
 router.delete(
-  '/api/movies/:id',
+  `${baseURL}/:id`,
   [authenticate, authorize],
   async (req: Request, res: Response) => {
     const movieId = req.params.id;

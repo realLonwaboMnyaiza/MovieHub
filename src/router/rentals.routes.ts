@@ -10,12 +10,14 @@ const router = express.Router();
 const database = process.env.DATABASE;
 Fawn.init(database);
 
-router.get('/api/rentals/', async (req: Request, res: Response) => {
+const baseURL = '/api/rentals';
+
+router.get(baseURL, async (req: Request, res: Response) => {
   const rentals = await Rental.find().sort({ checkoutDate: -1 });
   res.status(200).send(rentals);
 });
 
-router.post('/api/rentals/checkout', authenticate, async (req: Request, res: Response) => {
+router.post(`${baseURL}/checkout`, authenticate, async (req: Request, res: Response) => {
   const { error } = validate(req.body);
   if (error) res.status(400).send(error?.details[0]?.message);
 
@@ -40,8 +42,6 @@ router.post('/api/rentals/checkout', authenticate, async (req: Request, res: Res
   });
 
   try {
-    // todo: using lib to accomplish two-phase commit (ACID transations)
-    // check for this packages vuln and alternatives...
     await new Fawn.Task()
       .save('rentals', rental)
       .update(
@@ -65,7 +65,7 @@ router.post('/api/rentals/checkout', authenticate, async (req: Request, res: Res
   res.status(201).send(`Movie has been checked out. ${checkoutMovie}`);
 });
 
-router.post('/api/rentals/return/', authenticate, (req: Request, res: Response) => {
+router.post(`${baseURL}/return`, authenticate, (req: Request, res: Response) => {
   // todo: build out feature using TDD...
   res.status(400).send('Bad Request');
 });

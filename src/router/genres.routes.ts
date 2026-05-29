@@ -6,11 +6,11 @@ import validateGuid from '../middleware/guid-validation.middleware';
 import { Genre, validate } from '../models/genre.model';
 
 const router = express.Router();
-const minGenresLength = 5;
+const baseURL = '/api/genres';
 
 // todo: get lib to handle errors, used to be express-async-errors...
 router.get(
-  '/api/genres/',
+  baseURL,
   errorWrapper(async (req: Request, res: Response) => {
     const genres = await Genre.find().sort({ name: 1 });
     res.send(genres);
@@ -18,7 +18,7 @@ router.get(
 );
 
 router.get(
-  '/api/genres/:id',
+  `${baseURL}/:id`,
   validateGuid,
   errorWrapper(async (req: Request, res: Response) => {
     const genreId = req.guid;
@@ -38,7 +38,7 @@ router.get(
 );
 
 router.post(
-  '/api/genres/',
+  baseURL,
   [authenticate, authorize],
   errorWrapper(async (req: Request, res: Response) => {
     const genreName = req.body.name;
@@ -56,7 +56,7 @@ router.post(
 );
 
 router.put(
-  '/api/genres/:id',
+  `${baseURL}/:id`,
   [authenticate, authorize, validateGuid],
   errorWrapper(async (req:Request, res:Response) => {
     const genreId = req.guid;
@@ -69,7 +69,7 @@ router.put(
       res
         .status(400)
         .send(
-          `Name property must be at least ${minGenresLength} characters long.`,
+          `Name does not meet the minimum character requirements.`,
         );
     }
 
@@ -81,7 +81,7 @@ router.put(
 );
 
 router.delete(
-  '/api/genres/:id',
+  `${baseURL}/:id`,
   [authenticate, authorize, validateGuid],
   errorWrapper(async (req: Request, res: Response) => {
     const genreId = req.guid;

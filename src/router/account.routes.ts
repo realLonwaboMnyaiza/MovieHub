@@ -7,13 +7,15 @@ import authenticationValidation from '../models/auth.model';
 
 const router = express.Router();
 
-router.get('/api/app/', (req: Request, res: Response) => {
+const baseURL = '/api';
+const baseUserURL = '/api/user/';
+router.get(`${baseURL}/app/`, (req: Request, res: Response) => {
   res
     .status(200)
     .send('Welcome to MovieShack, we hope you enjoy our product offering.');
 });
 
-router.get('/api/user/', authenticate, async (req: Request, res: Response) => {
+router.get(baseUserURL, authenticate, async (req: Request, res: Response) => {
   const userToken = req.token._id; 
   const user = await User.findById(userToken).select({
     password: 0, // do not include password in response.
@@ -23,7 +25,7 @@ router.get('/api/user/', authenticate, async (req: Request, res: Response) => {
   res.header('x-auth-token', token).status(200).send(user);
 });
 
-router.put('/api/user/permissions/', async (req: Request, res: Response) => {
+router.put(`${baseUserURL}/permissions`, async (req: Request, res: Response) => {
   const email = req.body.email;
   const isAdmin = req.body.isAdmin;
 
@@ -36,7 +38,7 @@ router.put('/api/user/permissions/', async (req: Request, res: Response) => {
   return res.status(201).send('User rights have been elavated to ADMIN.');
 });
 
-router.post('/api/register/', async (req: Request, res: Response) => {
+router.post(`${baseURL}/register`, async (req: Request, res: Response) => {
   const { error } = validate(req.body);
   if (error) res.status(400).send(error?.details[0]?.message);
 
@@ -69,7 +71,7 @@ router.post('/api/register/', async (req: Request, res: Response) => {
     .send('User has been registered.');
 });
 
-router.post('/api/login/', async (req: Request, res: Response) => {
+router.post(`${baseURL}/login`, async (req: Request, res: Response) => {
   const { error } = authenticationValidation(req.body);
   if (error) return res.status(400).send(error?.details[0]?.message);
 
@@ -96,7 +98,7 @@ router.post('/api/login/', async (req: Request, res: Response) => {
 });
 
 // todo: add logout test.
-router.post('/api/logout/', async (req: Request, res: Response) => {
+router.post(`${baseURL}/logout`, async (req: Request, res: Response) => {
   res.setHeader('x-auth-token', '');
   return res.status(201).send('User has been logged out.');
 });

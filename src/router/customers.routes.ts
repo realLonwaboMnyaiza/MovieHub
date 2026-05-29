@@ -6,12 +6,14 @@ import { Request, Response } from 'express';
 
 const router = express.Router();
 
-router.get('/api/customers', async (req: Request, res: Response) => {
+const baseURL = '/api/customers';
+
+router.get(baseURL, async (req: Request, res: Response) => {
   const customer = await Customer.find().sort({ surname: 1 });
   res.send(customer);
 });
 
-router.get('/api/customers/:id', async (req: Request, res: Response) => {
+router.get(`${baseURL}/:id`, async (req: Request, res: Response) => {
   const customerId = req.params.id;
   const customer = await Customer.findById(customerId);
 
@@ -23,7 +25,7 @@ router.get('/api/customers/:id', async (req: Request, res: Response) => {
   res.send(customer);
 });
 
-router.post('/api/customers/', [authenticate, authorize], async (req: Request, res: Response) => {
+router.post(baseURL, [authenticate, authorize], async (req: Request, res: Response) => {
   const name = req.body.name;
   const surname = req.body.surname;
   const { error } = validate(req.body);
@@ -42,7 +44,7 @@ router.post('/api/customers/', [authenticate, authorize], async (req: Request, r
 });
 
 router.put(
-  '/api/customers/:id',
+  `${baseURL}/:id`,
   [authenticate, authorize],
   async (req: Request, res: Response) => {
     const customerId = req.params.id;
@@ -67,7 +69,7 @@ router.put(
 );
 
 router.delete(
-  '/api/customers/:id',
+  `${baseURL}/:id`,
   [authenticate, authorize],
   async (req: Request, res: Response) => {
     const customerId = req.params.id;
