@@ -32,15 +32,12 @@ router.post(baseURL, [authenticate, authorize], async (req: Request, res: Respon
   const dailyRentalRate = req.body.dailyRentalRate;
 
   const { error } = validate(req.body);
-  console.log('error: ', error);
   if (error) {
     res.status(400).send(error?.details[0]?.message);
   }
 
   if (!genreId) res.status(400).send('Genre id invalid');
   const genre = await Genre.findById(genreId);
-
-  console.log('genre: ', genre);
 
   const movie = await new Movie({
     title,
@@ -50,11 +47,11 @@ router.post(baseURL, [authenticate, authorize], async (req: Request, res: Respon
   });
 
   await movie.save();
-  res.status(201).send(`Movie has been saved. ${movie}`);
+  res.status(201).send(`Movie has been saved: ${movie}`);
 });
 
-router.put(`${baseURL}/:id`, [authenticate, authorize], async (req: Request, res: Response) => {
-  const movieId = req.params.id;
+router.put(`${baseURL}/:id`, [authenticate, authorize, validateGuid], async (req: Request, res: Response) => {
+  const movieId = req.guid;
   const movie = await Movie.findById(movieId);
 
   const { error } = validate(req.body);
@@ -83,9 +80,9 @@ router.put(`${baseURL}/:id`, [authenticate, authorize], async (req: Request, res
 
 router.delete(
   `${baseURL}/:id`,
-  [authenticate, authorize],
+  [authenticate, authorize, validateGuid],
   async (req: Request, res: Response) => {
-    const movieId = req.params.id;
+    const movieId = req.guid;
     const movie = await Movie.findById(movieId);
 
     if (!movie) res.status(404).send('Movie does not exist.');
