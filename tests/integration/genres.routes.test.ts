@@ -4,7 +4,7 @@ import { User } from '../../src/models/user.model';
 import { Genre, type GenrePayload } from '../../src/models/genre.model';
 import server from '../../src/index';
 
-enum MovieGenres {
+const enum MovieGenres {
   ACTION = 'action',
   COMEDY = 'comedy'
 };
