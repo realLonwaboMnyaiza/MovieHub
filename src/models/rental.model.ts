@@ -1,19 +1,15 @@
 import Joi from "joi";
-import joiObjectId from 'joi-objectid';
 import mongoose from "mongoose";
 import { customerSchema } from "./customer.model";
 import { movieDto } from "./movie.model";
-
-interface JoiWithObjectId extends Joi.Root {
-  objectId(): Joi.StringSchema;
-}
+import { validGuidRegex } from "../middleware/guid-validation.middleware";
 
 interface CompositePayload {
   customerId: string;
   movieId: string;
 };
 
-const name = 'Rental';
+const modelName = 'Rental';
 const schema = new mongoose.Schema({
   customer: {
     type: customerSchema,
@@ -35,14 +31,13 @@ const schema = new mongoose.Schema({
     min: 1,
   },
 });
-const model = mongoose.model(name, schema);
-
-const JoiObjectId: JoiWithObjectId = joiObjectId(Joi);
+const model = mongoose.model(modelName, schema);
+const validGuid = validGuidRegex();
 
 function validateUsingJoi(input: CompositePayload) {
   const schema = Joi.object({
-    customerId: JoiObjectId.objectId().required(),
-    movieId: JoiObjectId.objectId().required(),
+    customerId: Joi.string().pattern(validGuid).required(),
+    movieId: Joi.string().pattern(validGuid).required(),
   });
 
   return schema.validate(input);
