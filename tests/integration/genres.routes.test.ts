@@ -1,10 +1,19 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import request from 'supertest';
 import { User } from '../../src/models/user.model';
 import { Genre, type GenrePayload } from '../../src/models/genre.model';
 import server from '../../src/index';
 
+enum MovieGenres {
+  ACTION = 'action',
+  COMEDY = 'comedy'
+};
+
 describe('/api/genres/', () => {
+  beforeAll(async() => {
+    await Genre.deleteMany({});
+  });
+  
   afterEach(async () => {
     await Genre.deleteMany({});
   });
@@ -13,8 +22,8 @@ describe('/api/genres/', () => {
     it('should return all genres.', async () => {
       // arrange.
       await Genre.collection.insertMany([
-        { name: 'Genre 1' },
-        { name: 'Genre 2' },
+        { name: MovieGenres.ACTION },
+        { name: MovieGenres.COMEDY },
       ]);
 
       // act.
@@ -23,13 +32,13 @@ describe('/api/genres/', () => {
       // assert.
       expect(res.status).toBe(200);
       expect(res.body.length).toBe(2);
-      expect(res.body.some((g: GenrePayload) => g.name === 'Genre 1')).toBeTruthy();
+      expect(res.body.some((g: GenrePayload) => g.name === MovieGenres.ACTION)).toBeTruthy();
     });
   });
   describe('GET /:id', () => {
     it('should return a genre when ID is provided.', async () => {
       // arrange.
-      const genre = new Genre({ name: 'Genre 1' });
+      const genre = new Genre({ name: MovieGenres.ACTION });
       await genre.save();
 
       // act.
@@ -52,7 +61,7 @@ describe('/api/genres/', () => {
     it('should return 401 when user is not logged in.', async () => {
       // arrange.
       const genre = {
-        name: 'Genre 1',
+        name: MovieGenres.ACTION,
       };
 
       // act.
@@ -116,7 +125,7 @@ describe('/api/genres/', () => {
       const user = new User();
       user.isAdmin = true;
       const genre = new Genre();
-      genre.name = 'Action';
+      genre.name = MovieGenres.ACTION;
       const token = user.generateAuthenticationToken();
 
       // act.
@@ -138,7 +147,7 @@ describe('/api/genres/', () => {
       user.name = 'John Smith';
       user.isAdmin = true;
       const genre = new Genre();
-      genre.name = 'Action';
+      genre.name = MovieGenres.ACTION;
       const token = user.generateAuthenticationToken();
 
       // act.
@@ -149,7 +158,7 @@ describe('/api/genres/', () => {
 
       // assert.
       expect(res.status).toBe(201);
-      // expect(res.text).toMatch(`/${genre.name}/`);
+      expect(res.text).toContain(`${genre.name}`);
     });
   });
 });
