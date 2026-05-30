@@ -15,3 +15,21 @@ export default function validateGuid(req: Request, res: Response, next: NextFunc
   req.guid = resourceId;
   return next();
 }
+
+export function isValidGuid(objectId: string): boolean {
+  return validateWithMongoose(objectId);
+}
+
+function validateWithMongoose(guid: string): boolean {
+  return mongoose.Types.ObjectId.isValid(guid);
+}
+
+// @ts-expect-error: Suppress unused warning for this specific line
+function validateWithRegex(guid: string): boolean {
+  const guidRegex = validGuidRegex();
+  return guidRegex.test(guid);
+}
+
+export function validGuidRegex(): RegExp {
+  return /^[0-9a-fA-F]{24}$/;
+}
