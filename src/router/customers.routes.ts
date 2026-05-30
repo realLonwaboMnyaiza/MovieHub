@@ -30,7 +30,7 @@ router.post(baseURL, [authenticate, authorize], async (req: Request, res: Respon
   const surname = req.body.surname;
   const { error } = validate(req.body);
   if (error) {
-    res.status(400).send('Data is malformed.');
+    res.status(400).send(error?.details[0]?.message);
   }
 
   const customer = new Customer({
@@ -56,7 +56,7 @@ router.put(
     const { error } = validate(req.body);
     if (!customer) res.status(404).send('The customer does not exist.');
     if (error) {
-      res.status(400).send('Data is malformed.');
+      res.status(400).send(error?.details[0]?.message);
     }
 
     customer!.name = name;
@@ -78,7 +78,7 @@ router.delete(
     if (!customer) res.status(404).send('The customer does not exist.');
     await Customer.deleteOne({_id: customerId});
 
-    res.send(customerId);
+    res.send(`The following customer has been deleted: ${customer?.name} ${customer?.surname}`);
   },
 );
 
