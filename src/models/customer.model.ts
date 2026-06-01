@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import mongoose from 'mongoose';
+import { Schema, model, Model } from 'mongoose';
 
 interface CustomerPayload {
   name: string;
@@ -7,8 +7,18 @@ interface CustomerPayload {
   isPremium: boolean;
 }
 
+interface CustomerExtendedMethods {
+  getFullName(): string;
+}
+
+type CustomerModel = Model<CustomerPayload, {}, CustomerExtendedMethods>;
+
 const modelName = 'Customer';
-const schema = new mongoose.Schema({
+const schema = new Schema<
+  CustomerPayload,
+  CustomerModel,
+  CustomerExtendedMethods
+>({
   name: {
     type: String,
     required: true,
@@ -27,7 +37,14 @@ const schema = new mongoose.Schema({
   },
 });
 
-const model = mongoose.model(modelName, schema);
+schema.methods.getFullName = function (): string {
+  return `${this.name} ${this.surname}`;
+};
+
+export const Customer = model<CustomerPayload, CustomerModel>(
+  modelName,
+  schema,
+);
 
 function validateWithJoi(input: CustomerPayload) {
   const schema = Joi.object({
@@ -39,6 +56,5 @@ function validateWithJoi(input: CustomerPayload) {
   return schema.validate(input);
 }
 
-export { model as Customer };
 export { schema as customerSchema };
 export { validateWithJoi as validate };

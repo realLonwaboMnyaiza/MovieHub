@@ -3,6 +3,7 @@ import config from 'dotenv';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import Joi from 'joi';
 import { Schema, model, Model } from 'mongoose';
+import passwordComplexity from 'joi-password-complexity';
 const environment = process.env.NODE_ENV;
 const path = pathModule.join(process.cwd(), `.env.${environment}`);
 
@@ -72,23 +73,41 @@ schema.methods.generateAuthenticationToken = function (): string {
   const payload = { _id: this._id, isAdmin: this.isAdmin };
   const options: SignOptions = { expiresIn: '24h', algorithm: 'HS256' };
   if (privateKey) return jwt.sign(payload, privateKey, options);
-  return 'error';
+  return 'generateAuthenticationToken - error';
 };
 
 export const User = model<UserPayload, UserModel>(name, schema);
 
-function validateUsingJoi(input: UserPayload) {
+export function validateSchema(
+  input: UserPayload,
+): Joi.ValidationResult<string> {
   const schema = Joi.object({
     username: Joi.string().min(5).max(50).required(),
     name: Joi.string().min(5).max(50).required(),
     surname: Joi.string().min(5).max(50).required(),
     email: Joi.string().min(5).max(255).required().email(),
-    password: Joi.string().min(5).max(1024).required(),
+    password: Joi.string().min(5).max(50).required(),
     isAdmin: Joi.boolean().default(false),
   });
 
   return schema.validate(input);
 }
 
-export { validateUsingJoi as validate };
+export function validatePasswordComplexity(
+  password: string,
+): Joi.ValidationResult<string> {
+  const complexityOptions = {
+    min: 8,
+    max: 50,
+    lowerCase: 1,
+    upperCase: 2,
+    numeric: 3,
+    symbol: 1,
+    requirementCount: 1,
+  };
+
+  const passwordSchema = passwordComplexity(complexityOptions);
+  return passwordSchema.validate(password);
+}
+
 export type { UserPayload };

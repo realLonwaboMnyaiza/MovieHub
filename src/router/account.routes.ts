@@ -2,7 +2,11 @@ import express, { Request, Response } from 'express';
 import _ from 'lodash';
 import bcrypt from 'bcrypt';
 import authenticate from '../middleware/authentication.middleware';
-import { User, validate } from '../models/user.model';
+import {
+  User,
+  validateSchema,
+  validatePasswordComplexity,
+} from '../models/user.model';
 import authenticationValidation from '../models/auth.model';
 import authorize from '../middleware/authorization.middleware';
 
@@ -52,14 +56,16 @@ router.put(
 );
 
 router.post(`${baseUserURL}/register`, async (req: Request, res: Response) => {
-  const { error } = validate(req.body);
+  // todo: refactor...
+  let { error } = validateSchema(req.body);
+  if (error) res.status(400).send(error?.details[0]?.message);
+  ({ error } = validatePasswordComplexity(req.body.password));
   if (error) res.status(400).send(error?.details[0]?.message);
 
   const username = req.body.username;
   const name = req.body.name;
   const surname = req.body.surname;
   const email = req.body.email;
-  // todo: enforce password complexity with joi-password-complexity package.
   const password = req.body.password;
 
   let user = await User.findOne({ email });
