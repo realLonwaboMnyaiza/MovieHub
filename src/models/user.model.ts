@@ -94,7 +94,7 @@ export function validateSchema(
 }
 
 export function validatePasswordComplexity(
-  password: string,
+  input: UserPayload,
 ): Joi.ValidationResult<string> {
   const complexityOptions = {
     min: 8,
@@ -107,7 +107,7 @@ export function validatePasswordComplexity(
   };
 
   const passwordSchema = passwordComplexity(complexityOptions);
-  return passwordSchema.validate(password);
+  return passwordSchema.validate(input.password);
 }
 
 export type { UserPayload };

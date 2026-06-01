@@ -56,11 +56,11 @@ router.put(
 );
 
 router.post(`${baseUserURL}/register`, async (req: Request, res: Response) => {
-  // todo: refactor...
-  let { error } = validateSchema(req.body);
-  if (error) res.status(400).send(error?.details[0]?.message);
-  ({ error } = validatePasswordComplexity(req.body.password));
-  if (error) res.status(400).send(error?.details[0]?.message);
+  const validators = [validateSchema, validatePasswordComplexity];
+  for (const validator of validators) {
+    let { error } = validator(req.body);
+    if (error) return res.status(400).send(error?.details[0]?.message);
+  }
 
   const username = req.body.username;
   const name = req.body.name;
