@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
+import _ from 'lodash';
 import authenticate from '../middleware/authentication.middleware';
 import { Rental, validate } from '../models/rental.model';
 import { Customer } from '../models/customer.model';
@@ -61,16 +62,18 @@ router.post(
       session.endSession();
     }
 
-    // todo: loadash pick...
-    const checkoutMovie = {
-      title: movie?.title,
-      genre: movie?.genre,
-      rate: movie?.dailyRentalRate,
-      numberInStock: movie?.numberInStock,
-    };
+    const checkoutMovie = _.pick(movie, [
+      'title',
+      'dailyRentalRate',
+      'numberInStock',
+    ]);
+    const checkoutCustomer = customer?.getFullName();
+
     return res
       .status(201)
-      .send(`Movie has been checked out. ${JSON.stringify(checkoutMovie)}`);
+      .send(
+        `${checkoutCustomer}, checked out the following movie: ${JSON.stringify(checkoutMovie)}`,
+      );
   },
 );
 
