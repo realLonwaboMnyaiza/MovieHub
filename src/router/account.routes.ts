@@ -4,43 +4,52 @@ import bcrypt from 'bcrypt';
 import authenticate from '../middleware/authentication.middleware';
 import { User, validate } from '../models/user.model';
 import authenticationValidation from '../models/auth.model';
+import authorize from '../middleware/authorization.middleware';
 
 const router = express.Router();
 
 const baseAppURL = '/api';
-const baseUserURL = '/api/user';
+const baseUserURL = '/api/users';
 router.get(`${baseAppURL}/app/`, (req: Request, res: Response) => {
   res
     .status(200)
     .send('Welcome to MovieShack, we hope you enjoy our product offering.');
 });
 
-router.get(baseUserURL, authenticate, async (req: Request, res: Response) => {
-  const userToken = req.token._id; 
-  const user = await User.findById(userToken).select({
-    password: 0, // do not include password in response.
-  });
-  let token = req.get('x-auth-token');
-  if (!token) token = user?.generateAuthenticationToken();
-  res.header('x-auth-token', token).status(200).send(user);
-});
+router.get(
+  `${baseUserURL}/profile`,
+  authenticate,
+  async (req: Request, res: Response) => {
+    const userToken = req.token._id;
+    const user = await User.findById(userToken).select({
+      password: 0, // do not include password in response.
+    });
+    let token = req.get('x-auth-token');
+    if (!token) token = user?.generateAuthenticationToken();
+    res.header('x-auth-token', token).status(200).send(user);
+  },
+);
 
-router.put(`${baseUserURL}/permissions`, [authenticate], async (req: Request, res: Response) => {
-  const email = req.body.email;
-  const isAdmin = req.body.isAdmin;
+router.put(
+  `${baseUserURL}/permissions`,
+  [authenticate, authorize],
+  async (req: Request, res: Response) => {
+    const email = req.body.email;
+    const isAdmin = req.body.isAdmin;
 
-  const user = await User.findOne({ email });
-  if (!user) return res.status(400).send('User does not exist.');
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).send('User does not exist.');
 
-  user.isAdmin = isAdmin;
-  const token = user.generateAuthenticationToken();
-  await user.save();
+    user.isAdmin = isAdmin;
+    const token = user.generateAuthenticationToken();
+    await user.save();
 
-  return res
-    .header('x-auth-token', token)
-    .status(201)
-    .send('User rights have been elavated to ADMIN.');
-});
+    return res
+      .header('x-auth-token', token)
+      .status(201)
+      .send('User rights have been elavated to ADMIN.');
+  },
+);
 
 router.post(`${baseUserURL}/register`, async (req: Request, res: Response) => {
   const { error } = validate(req.body);
@@ -101,10 +110,11 @@ router.post(`${baseUserURL}/login`, async (req: Request, res: Response) => {
     .send('User successfully logged in.');
 });
 
-// todo: add logout test.
 router.post(`${baseUserURL}/logout`, async (req: Request, res: Response) => {
-  res.setHeader('x-auth-token', '');
-  return res.status(201).send('User has been logged out.');
+  return res
+    .setHeader('x-auth-token', '')
+    .status(201)
+    .send('User has been logged out.');
 });
 
 export default router;

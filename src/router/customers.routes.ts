@@ -36,6 +36,8 @@ router.post(
   async (req: Request, res: Response) => {
     const name = req.body.name;
     const surname = req.body.surname;
+    const isPremium = req.body.isPremium;
+
     const { error } = validate(req.body);
     if (error) {
       res.status(400).send(error?.details[0]?.message);
@@ -44,6 +46,7 @@ router.post(
     const customer = new Customer({
       name,
       surname,
+      isPremium,
     });
 
     await customer.save();

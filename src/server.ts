@@ -1,17 +1,13 @@
-import pathModule from "path";
+import pathModule from 'path';
 import dotenv from 'dotenv';
 import app from './index';
-import Logger from "./startup/logging";
-const environment = process.env.NODE_ENV || 'dev';
+import Logger from './startup/logging';
+const environment = process.env.NODE_ENV;
 const port = process.env.PORT || '3000';
 const db = process.env.DATABASE;
 const path = pathModule.join(process.cwd(), `.env.${environment}`);
-dotenv.config({path});
+dotenv.config({ path });
 
-// todo: refactor keep things DRY. Move to centralized loc. 
-
-    app.listen(port, () => {
-    new Logger(db, 'logs', 'info')
-    .log().info(`App listening on port ${port}`);
-    })
-    // console.log('Server listening');
+app.listen(port, () => {
+  new Logger(db, 'logs', 'info').log().info(`App listening on port ${port}`);
+});

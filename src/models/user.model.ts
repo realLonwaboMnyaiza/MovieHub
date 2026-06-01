@@ -3,7 +3,7 @@ import config from 'dotenv';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import Joi from 'joi';
 import { Schema, model, Model } from 'mongoose';
-const environment = process.env.NODE_ENV || 'dev';
+const environment = process.env.NODE_ENV;
 const path = pathModule.join(process.cwd(), `.env.${environment}`);
 
 config.config({ path });
@@ -15,14 +15,13 @@ interface UserPayload {
   email: string;
   password: string;
   isAdmin: boolean;
-};
-
+}
 
 interface UserExtendedMethods {
   generateAuthenticationToken(): string;
 }
 
-type UserModel = Model<UserPayload, {} , UserExtendedMethods>;
+type UserModel = Model<UserPayload, {}, UserExtendedMethods>;
 
 const name = 'User';
 const schema = new Schema<UserPayload, UserModel, UserExtendedMethods>({
@@ -69,11 +68,11 @@ const schema = new Schema<UserPayload, UserModel, UserExtendedMethods>({
 });
 
 schema.methods.generateAuthenticationToken = function (): string {
-  // todo: refactor possible null values from node process var..
-  const privateKey = process.env.KEY || 'dev';
+  const privateKey = process.env.KEY;
   const payload = { _id: this._id, isAdmin: this.isAdmin };
   const options: SignOptions = { expiresIn: '24h', algorithm: 'HS256' };
-  return jwt.sign(payload, privateKey, options);
+  if (privateKey) return jwt.sign(payload, privateKey, options);
+  return 'error';
 };
 
 export const User = model<UserPayload, UserModel>(name, schema);
